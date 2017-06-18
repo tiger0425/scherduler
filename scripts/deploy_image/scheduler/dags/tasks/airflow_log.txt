@@ -1,0 +1,16 @@
+2017-06-18 02:27:01,165, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:27:01,166, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:27:01,166, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:27:01,166, [MainProcess], airflow, DEBUG, first debug message
+2017-06-18 02:37:04,143, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:37:04,144, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:37:04,144, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:37:04,144, [MainProcess], airflow, DEBUG, first debug message
+2017-06-18 02:59:36,822, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:59:36,822, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:59:36,822, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:59:36,822, [MainProcess], airflow, DEBUG, first debug message
+2017-06-18 02:59:54,161, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:59:54,161, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:59:54,161, [MainProcess], airflow, INFO, first info message
+2017-06-18 02:59:54,161, [MainProcess], airflow, DEBUG, first debug message
