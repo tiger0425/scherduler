@@ -1,1 +1,3 @@
-FROM ubunut:14.04
+FROM registry.cn-hangzhou.aliyuncs.com/brucedone/python:base
+
+

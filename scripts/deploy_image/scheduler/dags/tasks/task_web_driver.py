@@ -7,10 +7,10 @@ import random
 
 def get_cnblogs(*arg, **kwargs):
     logger.info('start the session')
-    chioce = random.choice([0,1])
-    headers = DesiredCapabilities.CHROME
-    if chioce:
-        headers = DesiredCapabilities.FIREFOX
+    # chioce = random.choice([0,1])
+    # headers = DesiredCapabilities.CHROME
+    # if chioce:
+    headers = DesiredCapabilities.FIREFOX
 
     driver = webdriver.Remote(command_executor='http://hub:4444/wd/hub',
                               desired_capabilities=headers)
