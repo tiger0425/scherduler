@@ -4,6 +4,8 @@ services:
         image: selenium/hub:3.3.1
         ports:
           - "4444:4444"
+        environment:
+          - "GRID_MAX_SESSION=16"
     firefox:
         image: selenium/node-firefox:3.3.1
         links:
