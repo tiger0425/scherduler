@@ -12,7 +12,7 @@ def get_cnblogs(*arg, **kwargs):
     # if chioce:
     headers = DesiredCapabilities.FIREFOX
 
-    driver = webdriver.Remote(command_executor='http://hub:4444/wd/hub',
+    driver = webdriver.Remote(command_executor='http://10.10.2.38:4444/wd/hub',
                               desired_capabilities=headers)
     logger.info('get the webdriver')
     try:

@@ -1,30 +1,5 @@
 version: '2'
 services:
-    hub:
-        image: selenium/hub:3.3.1
-        ports:
-          - "4444:4444"
-        environment:
-          - "GRID_MAX_SESSION=16"
-
-    firefox:
-        image: selenium/node-firefox:3.3.1
-        links:
-          - "hub:hub"
-        environment:
-          - "HUB_PORT_4444_TCP_ADDR=hub"
-          - "HUB_PORT_4444_TCP_PORT=4444"
-          - "GRID_MAX_SESSION=4"
-
-    chrome:
-        image: selenium/node-chrome:3.3.1
-        links:
-          - "hub:hub"
-        environment:
-          - "HUB_PORT_4444_TCP_ADDR=hub"
-          - "HUB_PORT_4444_TCP_PORT=4444"
-          - "GRID_MAX_SESSION=4"
-
     redis:
         image: 'redis:3.2.7'
 
@@ -38,9 +13,7 @@ services:
             - "5432:5432"
 
     webserver:
-        image: local_base:latest
-        links:
-          - "hub:hub"
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
         restart: always
         depends_on:
             - postgres
@@ -49,9 +22,6 @@ services:
             - LOAD_EX=y
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
         volumes:
             - ./dags:/workspace/airflow/dags
         ports:
@@ -59,9 +29,7 @@ services:
         command: webserver
 
     flower:
-        image: local_base:latest
-        links:
-          - "hub:hub"
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
         restart: always
         depends_on:
             - redis
@@ -72,9 +40,7 @@ services:
         command: flower
 
     scheduler:
-        image: local_base:latest
-        links:
-          - "hub:hub"
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
         restart: always
         depends_on:
             - webserver
@@ -84,16 +50,11 @@ services:
             - LOAD_EX=y
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
         command: scheduler
 
     worker:
-        image: local_base:latest
-        links:
-          - "hub:hub"
-        #restart: always
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
+        restart: always
         depends_on:
             - scheduler
         ports:
