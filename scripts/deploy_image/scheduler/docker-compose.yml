@@ -24,6 +24,7 @@ services:
             - EXECUTOR=Celery
         volumes:
             - ./dags:/workspace/airflow/dags
+            #- ./log:/scheduler/log
         ports:
             - "8080:8080"
         command: webserver
@@ -46,6 +47,7 @@ services:
             - webserver
         volumes:
             - ./dags:/workspace/airflow/dags
+            #- ./log:/scheduler/log
         environment:
             - LOAD_EX=y
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
@@ -61,6 +63,7 @@ services:
             - "8793:8793"
         volumes:
             - ./dags:/workspace/airflow/dags
+            - ./log:/scheduler/log
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
