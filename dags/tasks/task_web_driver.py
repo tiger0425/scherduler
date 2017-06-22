@@ -3,8 +3,10 @@ from config import logger
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import random
+from decorator import timeout
 
 
+@timeout(60)
 def get_cnblogs(*arg, **kwargs):
     logger.info('start the session')
     chioce = random.choice([0,1])
