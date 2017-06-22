@@ -4,6 +4,7 @@ from airflow.utils import dates
 import time
 from tasks.config import logger
 
+
 args = {
     'owner': 'airflow',
     'start_date': dates.days_ago(1),
@@ -19,6 +20,7 @@ def op_sleep_func(*args, **kwargs):
 
 def op_print_hello(*args, **kwargs):
     print "op_print_hello"
+    logger.info('not i print the message {}'.format(str(time.time())))
     return 'hello'
 
 

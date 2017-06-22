@@ -3,9 +3,9 @@
 import logging.handlers
 import logging
 
-logger = logging.getLogger('scheduler')  # 获取名为tst的logger
+logger = logging.getLogger('airflow_app')  # 获取名为tst的logger
 
-LOG_FILE = 'airflow_log.txt'
+LOG_FILE = '/scheduler/log/airflow_log.txt'
 file_handler = logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=5)  # 实例化handler
 fmt = '%(asctime)s, [%(processName)s], %(name)-3s, %(levelname)s, %(message)s'
 formatter = logging.Formatter(fmt)  # 实例化formatter
@@ -21,4 +21,4 @@ logger.addHandler(console_handler)
 
 logger.setLevel(logging.DEBUG)
 
-logger.info('Start the app of scheduler')
+
