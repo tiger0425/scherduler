@@ -13,10 +13,11 @@ from tasks.common import util
 
 
 def register():
-    logger.info("japan-register-user:start begin... get ip ing... ")
+    logger.info("japan-register-user,start get ip ing... ")
     # fixme: this need to get the available ip add ip pool
 
     cur_ip = util.select_ip()
+    logger.info('get the ip of {}'.format(cur_ip))
     if not cur_ip:
         logger.info('get none ip return ,end the task')
         return
