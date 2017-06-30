@@ -20,13 +20,13 @@ def sleep_func(*args, **kwargs):
 
 
 dag = DAG(
-    dag_id='python_operator', default_args=args,
+    dag_id='run_register_japan', default_args=args,
     schedule_interval='*/5 * * * *')
 
 task_get_blogs = PythonOperator(
     task_id='task_get_blogs',
     # provide_context=True,
-    python_callable=task_register_japan,
+    python_callable=task_register_japan.register,
     dag=dag)
 
 task_sleep_this = PythonOperator(

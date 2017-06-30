@@ -2,7 +2,7 @@
 from config import logger
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from decorator import timeout
+from tasks.common.decorator import timeout
 
 
 @timeout(20)

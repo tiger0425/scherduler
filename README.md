@@ -11,13 +11,13 @@ quite useful components to schedule the selenium task .
     * tasks/ - the root module , when you add task ,please import this.
         * common/ - for some decorator or common use ,please always write here. 
         * dal/ - for data base control.
-        * driver/ - 
-        * ip/
-        * log/
-        * models/
-        * worker/
-        * settings.py
-    * run_register_japan.py - the dag job 
+        * driver/ - for all task need webdriver please just put here
+        * ip/ - control the ip.
+        * log/ - app logger.
+        * models/ - for data model.
+        * worker/ - for real run workers.
+        * settings.py - all configuration should be put here.
+    * run_register_japan.py - the dag job.
 
 
 ## TODO LIST

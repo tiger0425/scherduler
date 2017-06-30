@@ -20,7 +20,7 @@ def sleep_func(*args, **kwargs):
 
 
 dag = DAG(
-    dag_id='python_operator', default_args=args,
+    dag_id='run_python_dag', default_args=args,
     schedule_interval='*/5 * * * *')
 
 task_get_blogs = PythonOperator(

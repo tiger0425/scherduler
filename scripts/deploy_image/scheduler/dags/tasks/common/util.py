@@ -18,7 +18,7 @@ def make_driver(ip):
     options = webdriver.ChromeOptions()
     # 2017-04-14 设置代理
     # host = ip + ':8888'
-    host = '192.168.201.199:8888'
+    host = '192.168.201.195:8888'
     options.add_argument('browserName=chrome')
     options.add_argument('--proxy-server=http://' + host)
 

@@ -4,12 +4,11 @@ from airflow.utils import dates
 import time
 from tasks.config import logger
 
-
 args = {
     'owner': 'airflow',
     'start_date': dates.days_ago(1),
     'depends_on_past': False,
-    #'pool': 1
+    # 'pool': 1
 }
 
 
@@ -25,7 +24,7 @@ def op_print_hello(*args, **kwargs):
 
 
 dag = DAG(
-    dag_id='test_python_operator', default_args=args,
+    dag_id='test_python_op', default_args=args,
     schedule_interval='*/5 * * * *')
 
 print_hello = PythonOperator(
@@ -38,6 +37,7 @@ sleep_this = PythonOperator(
     task_id='sleep_this',
     provide_context=True,
     python_callable=op_sleep_func,
+    depends_on_past=False,
     dag=dag)
 
 sleep_this.set_upstream(print_hello)
