@@ -32,8 +32,8 @@ dag = DAG(
     schedule_interval='*/5 * * * *')
 
 SubDagOperator(
-    task_id='schedurler',
-    subdag=subdag_schedurler(DAG_NAME, 'schedurler', args, 10),
+    task_id='scheduler',
+    subdag=subdag_schedurler(DAG_NAME, 'scheduler', args, 10),
     default_args=args,
     dag=dag,
 )
