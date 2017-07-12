@@ -75,7 +75,7 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
 
     def op_return_ip(*args, **kwargs):
         ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' % (kwargs["params"]["cur_number"]))
-        #manage.return_ip(ip, 'default')
+        manage.return_ip(ip, 'default')
         logger.info('return ip------{}'.format(ip))
 
     def register_trigger(context,dag_run_obj):
