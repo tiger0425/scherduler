@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import airflow
+import datetime
 
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
-from datetime import datetime
 from tasks.log.config import logger
 
 args = {
     'owner': 'tiger',
-    'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=15)),
-    #'depends_on_past': False,
+    'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=1)),
+    'depends_on_past': False,
 }
 
 dag = DAG(

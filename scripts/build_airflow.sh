@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.0.2
+VERSION=0.2.0
 
 cd ./build_image/scheduler/
 

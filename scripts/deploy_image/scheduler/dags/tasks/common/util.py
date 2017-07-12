@@ -6,6 +6,8 @@ from selenium import webdriver
 from tasks.common.useragent import UserAgent
 from tasks.common.data import USER_INFO, USER_NAME, IP_POOL
 from tasks.settings import MAIL_OPTIONS
+from tasks.settings import SELENIUM_HUB_SERVER
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def make_user():
@@ -14,11 +16,11 @@ def make_user():
     return account, password
 
 
-def make_driver(ip):
+def make_driver(ip_host):
     options = webdriver.ChromeOptions()
     # 2017-04-14 设置代理
-    # host = ip + ':8888'
-    host = '192.168.201.195:8888'
+    host = ip_host + ':8888'
+    #host = '192.168.201.195:8888'
     options.add_argument('browserName=chrome')
     options.add_argument('--proxy-server=http://' + host)
 
@@ -28,7 +30,8 @@ def make_driver(ip):
 
     # 无图模式
     options.add_experimental_option('prefs', {"profile.managed_default_content_settings.images": 2})
-    driver = webdriver.Remote('http://192.168.1.251:4444/wd/hub', options.to_capabilities())
+    #driver = webdriver.Remote(SELENIUM_HUB_SERVER, options.to_capabilities())
+    driver = webdriver.Remote(SELENIUM_HUB_SERVER, DesiredCapabilities.CHROME)
     return driver
 
 

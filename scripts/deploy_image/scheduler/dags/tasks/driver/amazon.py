@@ -14,7 +14,6 @@ class AmazonDriver(object):
     def __init__(self, driver=None, host='www.amazon.com', captcha='127.0.0.1:8000'):
         self.driver = driver
         self.host = host
-        self.captcha = captcha
         self.driver.implicitly_wait(1)
         self.driver.set_window_size(1920, 1080)
         self.driver.set_page_load_timeout(120)
@@ -85,7 +84,9 @@ class AmazonDriver(object):
         logger.info('find the continue button and do click')
         button.click()
 
-        time.sleep(5)  # 缓迟五秒判断结果
+        #time.sleep(10)  # 缓迟五秒判断结果
+
+        self.driver.implicitly_wait(10)
         if 'https://{host}/ap/register'.format(host=self.host) in self.driver.current_url:  # 发生错误
 
             logger.error('quite the driver after the register')
@@ -116,7 +117,7 @@ class AmazonDriver(object):
         self.driver.find_element_by_id('address-ui-widgets-enterAddressPhoneNumber').send_keys(user_info['phone'])
 
         self.driver.find_element_by_xpath('//*[@id="a-autoid-0"]/span/input').click()
-        time.sleep(5)
+        self.driver.implicitly_wait(5)
 
         s_url = self.driver.current_url
         # ???? what's this

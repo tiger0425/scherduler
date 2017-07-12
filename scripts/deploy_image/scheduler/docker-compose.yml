@@ -13,7 +13,7 @@ services:
             - "5432:5432"
 
     webserver:
-        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.3.0
         restart: always
         depends_on:
             - postgres
@@ -30,7 +30,7 @@ services:
         command: webserver
 
     flower:
-        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.3.0
         restart: always
         depends_on:
             - redis
@@ -41,7 +41,7 @@ services:
         command: flower
 
     scheduler:
-        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.3.0
         restart: always
         depends_on:
             - webserver
@@ -55,7 +55,7 @@ services:
         command: scheduler
 
     worker:
-        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.1.1
+        image: registry.cn-hangzhou.aliyuncs.com/brucedone/airflow:v0.3.0
         restart: always
         depends_on:
             - scheduler

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+import random
+
 from airflow.operators.python_operator import PythonOperator
 from airflow import DAG
 from tasks.log.config import logger
@@ -20,14 +21,22 @@ from tasks.worker.japan import refresh_4g_and_ready_ip, register
 from tasks.ip import manage
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 
+
+
 def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
+
 
     def op_get_ip(*args, **kwargs):
         logger.info('start the get ip')
         try:
             #ip = refresh_4g_and_ready_ip()
-            ip = '192.168.1.1'
-            return ip
+            #ip = '192.168.1.1'
+            tag = 'default'
+            ip = manage.get_ip(tag)
+            logger.info('get the ip:{} from proxy server'.format(ip))
+
+            #host = ip.split(':')[0]
+            return ip.split(':')[0]
 
         except Exception as e:
             message = e.message
@@ -42,11 +51,13 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
     def op_get_task(*args, **kwargs):
         # 从任务队列中获取任务
         # task = get_task()
+
         logger.info('start the get task')
-        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' %(kwargs["params"]["cur_number"]))
+
         try:
             #task = get_task()
-            task = 'register'
+            task = random.choice(['wishlist', 'register', 'shopcar'])
+
             return task
         except Exception as e:
             message = e.message
@@ -59,33 +70,36 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
                 raise ValueError('finally return the ip and do stop the rest task ')
 
     def op_pass_ip(*args, **kwargs):
-        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' %(kwargs["params"]["cur_number"]))
+        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' % (kwargs["params"]["cur_number"]))
         logger.info('op_pass_ip get the ip and do pass the ip {}'.format(ip))
 
     def op_return_ip(*args, **kwargs):
-        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' %(kwargs["params"]["cur_number"]))
+        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' % (kwargs["params"]["cur_number"]))
         #manage.return_ip(ip, 'default')
-        logger.info('return ip------{}'.format(kwargs["params"]["cur_number"]))
+        logger.info('return ip------{}'.format(ip))
 
-    def register_trigger(dag_run_obj,*args, **kwargs):
-        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' %(kwargs["params"]["cur_number"]))
-        task = kwargs['task_instance'].xcom_pull(task_ids='task_get_task_%s' %(kwargs["params"]["cur_number"]))
-        if task=='register':
+    def register_trigger(context,dag_run_obj):
+
+        ip = context['task_instance'].xcom_pull(task_ids='task_get_ip_%s' % (context["params"]["cur_number"]))
+        task = context['task_instance'].xcom_pull(task_ids='task_get_task_%s' % (context["params"]["cur_number"]))
+        logger.info(task)
+        logger.info(ip)
+        if task == 'register':
             logger.info('run register')
             dag_run_obj.payload = {'ip': ip}
             return dag_run_obj
 
-    def shopcar_trigger(dag_run_obj,*args, **kwargs):
-        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' %(kwargs["params"]["cur_number"]))
-        task = kwargs['task_instance'].xcom_pull(task_ids='task_get_task_%s' %(kwargs["params"]["cur_number"]))
-        if task=='shopcar':
+    def shopcar_trigger(context, dag_run_obj):
+        ip = context['task_instance'].xcom_pull(task_ids='task_get_ip_%s' % (context["params"]["cur_number"]))
+        task = context['task_instance'].xcom_pull(task_ids='task_get_task_%s' % (context["params"]["cur_number"]))
+        if task == 'shopcar':
             logger.info('run shopcar')
             dag_run_obj.payload = {'ip': ip}
             return dag_run_obj
 
-    def wishlist_trigger(dag_run_obj,*args, **kwargs):
-        ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip_%s' %(kwargs["params"]["cur_number"]))
-        task = kwargs['task_instance'].xcom_pull(task_ids='task_get_task_%s' %(kwargs["params"]["cur_number"]))
+    def wishlist_trigger(context,dag_run_obj):
+        ip = context['task_instance'].xcom_pull(task_ids='task_get_ip_%s' % (context["params"]["cur_number"]))
+        task = context['task_instance'].xcom_pull(task_ids='task_get_task_%s' % (context["params"]["cur_number"]))
         if task=='wishlist':
             logger.info('run wishlist')
             dag_run_obj.payload = {'ip' : ip}
@@ -130,18 +144,21 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
 
         trigger_register = TriggerDagRunOperator(task_id='trigger_dag_register_%s' %(i+1),
                                                  trigger_dag_id="dag_register",
+                                                 provide_context=True,
                                                  python_callable=register_trigger,
                                                  params={"cur_number": i + 1},
                                                  dag=dag_subdag)
 
         trigger_shopcar = TriggerDagRunOperator(task_id='trigger_dag_shopcar_%s' %(i+1),
                                                 trigger_dag_id="dag_shopcar",
+                                                provide_context=True,
                                                 python_callable=shopcar_trigger,
                                                 params={"cur_number": i + 1},
                                                 dag=dag_subdag)
 
         trigger_wishlist = TriggerDagRunOperator(task_id='trigger_dag_wishlist_%s' %(i+1),
                                                  trigger_dag_id="dag_wishlist",
+                                                 provide_context=True,
                                                  python_callable=wishlist_trigger,
                                                  params={"cur_number": i + 1},
                                                  dag=dag_subdag)
@@ -154,5 +171,5 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
         task_return_ip.set_upstream(trigger_register)
         task_return_ip.set_upstream(trigger_shopcar)
         task_return_ip.set_upstream(trigger_wishlist)
-
+        task_return_ip.set_upstream(task_pass_ip)
     return dag_subdag

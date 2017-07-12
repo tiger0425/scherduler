@@ -12,29 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import airflow
-
+import datetime
 from airflow.models import DAG
-from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.subdag_operator import SubDagOperator
 from subdags.subdag_scheduler import subdag_schedurler
-from datetime import datetime
+
 
 DAG_NAME = 'dag_main'
 
 args = {
     'owner': 'tiger',
-    'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=15)),
-    #'depends_on_past': False,
+    'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=2)),
+    'depends_on_past': False,
 }
 
 dag = DAG(
-    dag_id=DAG_Name,
+    dag_id=DAG_NAME,
     default_args=args,
-    schedule_interval='*/5 * * * *')
+    schedule_interval='*/1 * * * *')
 
 SubDagOperator(
     task_id='scheduler',
-    subdag=subdag_schedurler(DAG_NAME, 'scheduler', args, 10),
+    subdag=subdag_schedurler(DAG_NAME, 'scheduler', args, 50),
     default_args=args,
     dag=dag,
 )
