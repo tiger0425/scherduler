@@ -11,30 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import airflow
 
+from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.subdag_operator import SubDagOperator
-from subdags.subdag_scheduler import subdag_schedurler
 from datetime import datetime
-
-DAG_NAME = 'dag_main'
+from tasks.log.config import logger
 
 args = {
-    'owner': 'tiger',
+    'owner': 'register',
     'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=15)),
     #'depends_on_past': False,
 }
 
 dag = DAG(
-    dag_id=DAG_Name,
+    dag_id='dag_register',
     default_args=args,
-    schedule_interval='*/5 * * * *')
+    schedule_interval=None)
 
-SubDagOperator(
-    task_id='scheduler',
-    subdag=subdag_schedurler(DAG_NAME, 'scheduler', args, 10),
-    default_args=args,
-    dag=dag,
-)
+def op_register(*args, **kwargs):
+    logger.info('register run IP {}'.format(kwargs['dag_run'].conf['ip']))
+
+task_register = PythonOperator(
+    task_id='task_register',
+    provide_context=True,
+    python_callable=op_register,
+    depends_on_past=False,
+    dag=dag)
