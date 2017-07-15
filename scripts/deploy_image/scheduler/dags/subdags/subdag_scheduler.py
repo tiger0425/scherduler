@@ -36,7 +36,7 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
             logger.info('get the ip:{} from proxy server'.format(ip))
 
             #host = ip.split(':')[0]
-            return ip.split(':')[0]
+            return ip
 
         except Exception as e:
             message = e.message
@@ -47,6 +47,8 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
                 manage.return_ip(ip, 'default')
                 # make sure always return the ip as require
                 raise ValueError('finally return the ip and do stop the rest task ')
+            if 'not invalidate ip address' in message:
+                raise ValueError(' do stop the rest task ')
 
     def op_get_task(*args, **kwargs):
         # 从任务队列中获取任务
@@ -134,6 +136,7 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
             dag=dag_subdag)
 
         task_return_ip = PythonOperator(
+
             task_id='task_return_ip_%s' %(i+1),
             provide_context=True,
             python_callable=op_return_ip,
@@ -141,7 +144,6 @@ def subdag_schedurler(parent_dag_name,child_dag_name,args,set_number):
             trigger_rule='one_success',
             depends_on_past=False,
             dag=dag_subdag)
-
         trigger_register = TriggerDagRunOperator(task_id='trigger_dag_register_%s' %(i+1),
                                                  trigger_dag_id="dag_register",
                                                  provide_context=True,

@@ -29,11 +29,11 @@ args = {
 dag = DAG(
     dag_id=DAG_NAME,
     default_args=args,
-    schedule_interval='*/1 * * * *')
+    schedule_interval='@once')
 
 SubDagOperator(
     task_id='scheduler',
-    subdag=subdag_schedurler(DAG_NAME, 'scheduler', args, 50),
+    subdag=subdag_schedurler(DAG_NAME, 'scheduler', args, 200),
     default_args=args,
     dag=dag,
 )

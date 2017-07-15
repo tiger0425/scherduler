@@ -1,141 +1,101 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+import random
 import time
+import json
 import datetime
 from airflow.operators.python_operator import PythonOperator
 from airflow import DAG
 from tasks.log.config import logger
-from tasks.worker.japan import refresh_4g_and_ready_ip, register
-from tasks.ip import manage
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
+import commands
+
+
+from tasks.settings import IP_PROXY_SERVER, DIAL_TIME_OUT
+import requests
+from urlparse import urljoin
 
 args = {
-    'owner': 'manager',
-    'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=15)),
+    'owner': 'tiger',
+    'start_date': (datetime.datetime.now() - datetime.timedelta(minutes=2)),
     'depends_on_past': False,
 }
-
-def op_get_ip(*args, **kwargs):
-    logger.info('start the get ip')
-    try:
-        ip = refresh_4g_and_ready_ip()
-        return ip
-
-    except Exception as e:
-        message = e.message
-        logger.error('=======get the error message=====')
-        logger.error(e)
-        if 'error' in message:
-            ip = message.split(':')[-1]
-            manage.return_ip(ip, 'default')
-            # make sure always return the ip as require
-            raise ValueError('finally return the ip and do stop the rest task ')
-
-
-def op_get_task():
-    #从任务队列中获取任务
-    #task = get_task()
-    logger.info('start the get task')
-    ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip')
-    try:
-        task = get_task()
-        return task
-    except Exception as e:
-        message = e.message
-        logger.error('=======get the error message=====')
-        logger.error(e)
-        if 'error' in message:
-            ip = message.split(':')[-1]
-            manage.return_ip(ip, 'default')
-            # make sure always return the ip as require
-            raise ValueError('finally return the ip and do stop the rest task ')
-
-
-def op_pass_ip(*args, **kwargs):
-    ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip')
-    logger.info('op_pass_ip get the ip and do pass the ip '.format(ip))
-
-
-def op_return_ip(*args, **kwargs):
-    ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip')
-    manage.return_ip(ip, 'default')
-
-def register_trigger(*args, **kwargs,dag_run_obj):
-    ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip')
-    task = kwargs['task_instance'].xcom_pull(task_ids='task_get_task')
-    if task='register':
-        logger.info('run register')
-        return dag_run_obj
-
-def register_shopcar(*args, **kwargs,dag_run_obj):
-    ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip')
-    task = kwargs['task_instance'].xcom_pull(task_ids='task_get_task')
-    if task='shopcar':
-        logger.info('run shopcar')
-        return dag_run_obj
-
-def register_wishlist(*args, **kwargs,dag_run_obj):
-    ip = kwargs['task_instance'].xcom_pull(task_ids='task_get_ip')
-    task = kwargs['task_instance'].xcom_pull(task_ids='task_get_task')
-    if task='wishlist':
-        logger.info('run wishlist')
-        return dag_run_obj
 
 dag = DAG(
     dag_id='dag_scheduler',
     default_args=args,
-    schedule_interval='*/5 * * * *')
-
-task_get_ip = PythonOperator(
-    task_id='task_get_ip',
-    provide_context=True,
-    python_callable=op_get_ip,
-    dag=dag)
-
-task_get_task = PythonOperator(
-    task_id='task_get_task',
-    provide_context=True,
-    python_callable=op_get_task,
-    dag=dag)
+    schedule_interval='@once')
 
 
-task_pass_ip = PythonOperator(
-    task_id='task_pass_ip',
-    provide_context=True,
-    python_callable=op_pass_ip,
-    depends_on_past=False,
-    dag=dag)
 
-task_return_ip = PythonOperator(
-    task_id='task_return_ip',
-    provide_context=True,
-    python_callable=op_return_ip,
-    trigger_rule='one_success',
-    depends_on_past=False,
-    dag=dag)
 
-trigger_register = TriggerDagRunOperator(task_id='trigger_dag_register',
-                                trigger_dag_id="dag_register",
-                                python_callable=register_trigger,
-                                dag=dag)
 
-trigger_shopcar = TriggerDagRunOperator(task_id='trigger_dag_shopcar',
-                                trigger_dag_id="dag_shopcar",
-                                python_callable=shopcar_trigger,
-                                dag=dag)
+def op_scheduler(*args, **kwargs):
+    tag = 'default'
 
-trigger_wishlist = TriggerDagRunOperator(task_id='trigger_dag_wishlist',
-                                trigger_dag_id="dag_wishlist",
-                                python_callable=wishlist_trigger,
-                                dag=dag)
+    while True:
+        #获取有用的IP,如果没有就等待
+        logger.info('start the get ip')
+        url = urljoin(IP_PROXY_SERVER, '/api/ip/get')
+        data = {
+            'direct': 'left',
+            'tag': tag,
+        }
+        ip = requests.post(url=url, data=data).json()
 
-task_get_ip.set_downstream(task_pass_ip)
-task_get_ip.set_downstream(task_get_task)
-task_get_task.set_downstream(trigger_register )
-task_get_task.set_downstream(trigger_shopcar  )
-task_get_task.set_downstream(trigger_wishlist )
+        if not ip:
+            time.sleep(5)
+            continue
 
-task_pass_ip >> task_return_ip
-trigger_wishlist >> task_return_ip
-trigger_shopcar >> task_return_ip
-trigger_register >> task_return_ip
+        # {"result":"192.168.1.3:8888","status":200}
+        result = ip.get('result', '')
+        if not result:
+            time.sleep(5)
+            continue
+
+        # 从任务队列中获取任务
+        # task = get_task()
+
+        logger.info('start the get task')
+        url = urljoin('http://192.168.1.251:9001', '/api/task/get')
+        #task_json = requests.post(url=url, data=data).json()
+        r = requests.get(url=url)
+        dirc = json.loads(r.text)
+        task_result = eval(dirc["result"])
+        task = task_result["type"]
+        task_id = task_result["tid"]
+        task_host = task_result["host"]
+
+        #task = get_task()
+        #task = random.choice(['wishlist', 'register', 'shopcar'])
+
+
+        if task == 'register':
+            status, output = commands.getstatusoutput("airflow trigger_dag -c '{\"ip\":\"" + result + "\",\"taskid\":\"" + task_id +"\",\"host\":\"" + task_host +"\"}' dag_register")
+        if task == 'wishlist':
+            status, output = commands.getstatusoutput("airflow trigger_dag -c '{\"ip\":\"" + result + "\",\"taskid\":\"" + task_id +"\",\"host\":\"" + task_host +"\"}' dag_wishlist")
+        elif task == 'shoppingcart':
+            status, output = commands.getstatusoutput("airflow trigger_dag -c '{\"ip\":\"" + result + "\",\"taskid\":\"" + task_id +"\",\"host\":\"" + task_host +"\"}' dag_shopcar")
+
+        logger.info(output)
+        time.sleep(5)
+
+for i in range(5):
+    task_scheduler = PythonOperator(
+                                    task_id='task_scheduler_%s' % (i+1),
+                                    provide_context=True,
+                                    python_callable=op_scheduler,
+                                    depends_on_past=False,
+                                    dag=dag)
+

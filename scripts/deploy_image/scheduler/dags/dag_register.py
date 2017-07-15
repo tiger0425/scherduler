@@ -13,7 +13,8 @@
 # limitations under the License.
 import airflow
 import datetime
-
+import time
+from tasks.ip import manage
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
 from tasks.log.config import logger
@@ -30,7 +31,17 @@ dag = DAG(
     schedule_interval=None)
 
 def op_register(*args, **kwargs):
-    logger.info('register run IP {}'.format(kwargs['dag_run'].conf['ip']))
+    ip = kwargs['dag_run'].conf['ip']
+    taskid  = kwargs['dag_run'].conf['taskid']
+    host = kwargs['dag_run'].conf['host']
+    #time.sleep(300)
+    logger.info('taskid ---- {}'.format(taskid))
+    logger.info('host ---- {}'.format(host))
+    logger.info('register run IP {}'.format(ip))
+    manage.return_ip(ip, 'default')
+    #logger.info('return ip------{}'.format(ip))
+
+
 
 task_register = PythonOperator(
     task_id='task_register',
